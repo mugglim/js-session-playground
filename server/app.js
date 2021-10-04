@@ -2,7 +2,7 @@ const express = require('express');
 const session = require('express-session');
 const FileStore = require('session-file-store')(session);
 const indexRouter = require('./router/index');
-const authRouter = require('./router/auth');
+const oauthRouter = require('./router/oauth');
 const path = require('path');
 const app = express();
 const sessionConfig = require('./config/session.config');
@@ -21,7 +21,7 @@ app.use(
 );
 
 app.use('/', indexRouter);
-app.use('/auth', authRouter);
+app.use('/oauth', oauthRouter);
 
 app.listen(3000, () => {
 	console.log('3000!');

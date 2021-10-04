@@ -10,7 +10,8 @@ router.get('/', (req, res, next) => {
 	const isLogin = authIsLoign(req);
 
 	if (isLogin) {
-		res.render('logout', { id: req.session.loginId });
+		const { userName } = req.session;
+		res.render('logout', { userName });
 	} else {
 		res.render('index', {});
 	}
