@@ -1,11 +1,6 @@
 const express = require('express');
 const router = express.Router();
 
-const userData = {
-	id: 'root',
-	pw: 'root',
-};
-
 router.get('/login', (req, res, next) => {
 	res.render('login', {});
 });
