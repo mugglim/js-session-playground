@@ -2,4 +2,5 @@ sessions
 node_modules
 *.pu
 server/config
+server/config/*
 *.config.js
