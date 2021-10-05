@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
-const axios = require('axios');
+const httpRequest = require('../util/http-request');
+
 const ouathConfig = require('../config/oauth.config');
 const model = require('../models/index');
 
@@ -8,17 +9,19 @@ async function getToken(req) {
 	try {
 		const { code } = req.query;
 		const { CLIENT_ID, CLIENT_SECRET_ID } = ouathConfig;
-		const opts = { headers: { accept: 'application/json' } };
-		const body = {
+		const data = {
 			client_id: CLIENT_ID,
 			client_secret: CLIENT_SECRET_ID,
 			code,
 		};
 
-		const tokenUrl = 'https://github.com/login/oauth/access_token';
-		const { data } = await axios.post(tokenUrl, body, opts);
-		const { access_token } = data;
+		const response = await httpRequest.post(
+			'github.com',
+			'/login/oauth/access_token',
+			data,
+		);
 
+		const { access_token } = response;
 		return Promise.resolve(access_token);
 	} catch (err) {
 		console.log(err);
@@ -27,12 +30,9 @@ async function getToken(req) {
 
 async function getUserInfo(token) {
 	try {
-		const userProfileUrl = 'https://api.github.com/user';
-		const opts = { headers: { Authorization: `token ${token}` } };
-		const response = await axios.get(userProfileUrl, opts);
-		const { data } = response;
-
-		return Promise.resolve(data);
+		const header = { Authorization: `token ${token}` };
+		const response = await httpRequest.get('api.github.com', '/user', header);
+		return Promise.resolve(response);
 	} catch (err) {
 		console.log(err);
 	}
@@ -76,19 +76,21 @@ router.get('/callback', async (req, res, next) => {
 		// 1. get token
 		const token = await getToken(req);
 
+		console.log('Token:', token);
+
 		// 2. get user info
 		const userInfo = await getUserInfo(token);
-
+		console.log('userInfo:', userInfo);
 		// 3. check user is signed up
 		const { id, login } = userInfo;
 		const isUserSignUp = await checkUserSignUp(id);
 
 		if (!isUserSignUp) {
-			// 3.1 insert to DB
+			// 	// 3.1 insert to DB
 			await insertUser(login, id);
 		}
 
-		// 4. generate session and redirect
+		// // 4. generate session and redirect
 		req.session.isLogin = true;
 		req.session.userName = login;
 		req.session.save(() => res.redirect('/'));
