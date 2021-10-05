@@ -7,9 +7,22 @@ const path = require('path');
 const app = express();
 const sessionConfig = require('./config/session.config');
 
+const sequelize = require('./models/index').sequelize;
+
+const sequelizeDriver = async () => {
+	try {
+		await sequelize.sync();
+	} catch (err) {
+		console.error('sequelize 연동 실패', err);
+		return;
+	}
+	console.log('sequelize 연동 성공!');
+};
+
+sequelizeDriver();
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'pug');
 
